@@ -1,4 +1,4 @@
-# Climate CoPilot — Data Collection & Preprocessing (Weeks 1–3)
+# Climate CoPilot — Data Collection & Preprocessing
 
 This is the first stage of the pipeline: collecting source PDFs and
 turning them into clean, page-level text ready for chunking.
