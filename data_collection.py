@@ -133,7 +133,8 @@ def download_from_urls(urls: Iterable[str], source: str, topic: str, timeout: in
 
     for url in urls:
         try:
-            resp = requests.get(url, timeout=timeout)
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+            resp = requests.get(url, headers=headers, timeout=timeout)
             resp.raise_for_status()
         except requests.RequestException as e:
             print(f"  [fail] could not download {url}: {e}")

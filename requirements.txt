@@ -2,3 +2,5 @@ pymupdf
 pandas
 requests
 tqdm
+sentence-transformers
+faiss-cpu
