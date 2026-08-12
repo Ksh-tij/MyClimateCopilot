@@ -47,6 +47,11 @@ def main():
     search_parser.add_argument("--query", "-q", required=True, help="Search query string")
     search_parser.add_argument("--top_k", "-k", type=int, default=5, help="Number of top passages to retrieve (default: 5)")
     search_parser.add_argument("--source", help="Optional source filter (e.g. FAO, IPCC)")
+    search_parser.add_argument(
+        "--mode", "-m", choices=["dense", "bm25", "hybrid"], default="dense",
+        help="Retrieval mode: dense (FAISS cosine similarity, default), bm25 (keyword search), "
+             "or hybrid (both, merged via Reciprocal Rank Fusion)"
+    )
 
     args = parser.parse_args()
 
@@ -61,8 +66,8 @@ def main():
     elif args.command == "index":
         indexing.build_index()
     elif args.command == "search":
-        results = retrieval.search(args.query, top_k=args.top_k, source_filter=args.source)
-        retrieval.print_search_results(args.query, results)
+        results = retrieval.search(args.query, top_k=args.top_k, source_filter=args.source, mode=args.mode)
+        retrieval.print_search_results(args.query, results, mode=args.mode)
 
 
 if __name__ == "__main__":

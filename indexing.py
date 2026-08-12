@@ -8,17 +8,20 @@ vector store (cosine similarity), and persists the index and metadata mapping.
 """
 
 import json
+import pickle
 import time
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
 
 import faiss
 import numpy as np
+from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer
 
 from config import (
-    CHUNKS_JSON, FAISS_INDEX_PATH, CHUNKS_METADATA_PATH, EMBEDDING_MODEL_NAME
+    CHUNKS_JSON, FAISS_INDEX_PATH, CHUNKS_METADATA_PATH, BM25_INDEX_PATH, EMBEDDING_MODEL_NAME
 )
+import bm25_utils
 import chunking
 
 
@@ -80,12 +83,23 @@ def build_index() -> Tuple[faiss.Index, List[Dict[str, Any]]]:
     with open(CHUNKS_METADATA_PATH, "w", encoding="utf-8") as f:
         json.dump(metadata_list, f, ensure_ascii=False, indent=2)
 
+    # Build BM25 keyword index (aligned to the same chunk order as metadata_list,
+    # so BM25 doc index i, FAISS vector_id i, and metadata[i] all refer to the same chunk)
+    print("Building BM25 keyword index...")
+    tokenized_corpus = [bm25_utils.tokenize(c["text"]) for c in chunks]
+    bm25_index = BM25Okapi(tokenized_corpus)
+
+    with open(BM25_INDEX_PATH, "wb") as f:
+        pickle.dump(bm25_index, f)
+
     index_size_mb = round(FAISS_INDEX_PATH.stat().st_size / (1024 * 1024), 2)
+    bm25_size_kb = round(BM25_INDEX_PATH.stat().st_size / 1024, 1)
     print(f"\nFAISS Index successfully built and saved!")
     print(f"Total vectors indexed: {index.ntotal}")
     print(f"Vector Dimension:     {dimension}")
     print(f"FAISS Index Path:     {FAISS_INDEX_PATH} ({index_size_mb} MB)")
     print(f"Metadata Map Path:    {CHUNKS_METADATA_PATH}")
+    print(f"BM25 Index Path:      {BM25_INDEX_PATH} ({bm25_size_kb} KB)")
 
     return index, metadata_list
 

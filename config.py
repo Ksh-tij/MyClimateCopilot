@@ -20,6 +20,7 @@ PREPROCESS_LOG = LOG_DIR / "preprocessing_log.csv"  # tracks extraction results 
 CHUNKS_JSON = CHUNKS_DIR / "chunks.json"           # passage chunks file
 FAISS_INDEX_PATH = VECTORSTORE_DIR / "index.faiss" # FAISS index file
 CHUNKS_METADATA_PATH = VECTORSTORE_DIR / "chunks_metadata.json" # metadata index for retrieval
+BM25_INDEX_PATH = VECTORSTORE_DIR / "bm25_index.pkl" # pickled BM25 keyword index (aligned to chunks_metadata order)
 
 # ---- Preprocessing settings ----
 MIN_TEXT_LENGTH = 200          # documents that extract to fewer characters than this are flagged as "low_text"
@@ -35,6 +36,9 @@ CHUNK_OVERLAP = 150           # overlap between consecutive chunks (~25-30 words
 
 # ---- Embedding Model settings ----
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+
+# ---- Hybrid search settings ----
+RRF_K = 60  # Reciprocal Rank Fusion constant (Cormack et al.)
 
 # Ensure folders exist whenever config is imported
 for _dir in (RAW_DIR, PROCESSED_DIR, CHUNKS_DIR, VECTORSTORE_DIR, LOG_DIR):

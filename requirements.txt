@@ -4,3 +4,4 @@ requests
 tqdm
 sentence-transformers
 faiss-cpu
+rank_bm25
