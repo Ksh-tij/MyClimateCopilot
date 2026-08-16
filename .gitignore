@@ -46,3 +46,10 @@ Thumbs.db
 # data/raw/*.pdf
 # data/vectorstore/index.faiss
 # data/vectorstore/bm25_index.pkl
+
+# Node.js / Frontend
+node_modules/
+frontend/dist/
+frontend/node_modules/
+.npm
+*.log
