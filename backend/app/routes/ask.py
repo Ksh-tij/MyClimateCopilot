@@ -120,7 +120,11 @@ async def ask_question(request: AskRequest):
             eval_result = rag_service.evaluate_answer(
                 question=result["question"],
                 answer=result["answer"],
-                passages=result["passages"]
+                passages=result["passages"],
+                # honour an explicitly requested model for evaluation too,
+                # otherwise a per-request override would silently apply to
+                # generation only and still hit the original model's quota
+                model=request.model
             )
             response.evaluation = _format_evaluation(eval_result)
         

@@ -16,7 +16,10 @@ class AskRequest(BaseModel):
     source_filter: Optional[str] = Field(default=None, description="Filter by source (e.g., IPCC, FAO)")
     include_sources: bool = Field(default=True, description="Include retrieved passages in response")
     include_evaluation: bool = Field(default=False, description="Include self-evaluation scores")
-    model: str = Field(default="llama-3.3-70b-versatile", description="Groq model to use")
+    model: Optional[str] = Field(
+        default=None,
+        description="Groq model to use; defaults to GROQ_MODEL from the server environment"
+    )
 
 
 class SearchRequest(BaseModel):

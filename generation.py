@@ -20,8 +20,11 @@ load_dotenv()
 # Groq client (initialized lazily)
 _GROQ_CLIENT: Optional[Groq] = None
 
-# Default model - Groq offers fast inference on these models
-DEFAULT_MODEL = "llama-3.3-70b-versatile"  # Options: llama-3.3-70b-versatile, llama3-8b-8192, mixtral-8x7b-32768
+# Default model — override with GROQ_MODEL in .env to switch without editing code.
+# Available on Groq: llama-3.3-70b-versatile (best quality), llama-3.1-8b-instant
+# (fast, separate rate-limit pool), openai/gpt-oss-20b, openai/gpt-oss-120b,
+# qwen/qwen3.6-27b. Note each model has its own daily token quota.
+DEFAULT_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 
 def _get_groq_client() -> Groq:
@@ -88,7 +91,7 @@ def generate_answer(
     top_k: int = 5,
     source_filter: Optional[str] = None,
     retrieval_mode: str = "hybrid",
-    model: str = DEFAULT_MODEL,
+    model: Optional[str] = None,
     temperature: float = 0.3,
     max_tokens: int = 2048,
     verbose: bool = False
@@ -109,6 +112,10 @@ def generate_answer(
     Returns:
         Dict with keys: question, answer, passages, model, usage
     """
+    # Resolve the model once: explicit argument wins, otherwise fall back to
+    # DEFAULT_MODEL (which itself honours GROQ_MODEL from .env).
+    model = model or DEFAULT_MODEL
+
     # Step 1: Retrieve relevant passages
     if verbose:
         print(f"[1/3] Retrieving passages (mode={retrieval_mode}, top_k={top_k})...")
@@ -201,7 +208,7 @@ def ask(
     top_k: int = 5,
     source_filter: Optional[str] = None,
     retrieval_mode: str = "hybrid",
-    model: str = DEFAULT_MODEL,
+    model: Optional[str] = None,
     show_passages: bool = False,
     verbose: bool = False
 ) -> Dict[str, Any]:

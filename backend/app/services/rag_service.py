@@ -86,7 +86,7 @@ class RAGService:
         top_k: int = 5,
         mode: str = "hybrid",
         source_filter: Optional[str] = None,
-        model: str = "llama-3.3-70b-versatile"
+        model: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Generate an answer to a question.
@@ -114,7 +114,8 @@ class RAGService:
         self,
         question: str,
         answer: str,
-        passages: List[Dict[str, Any]]
+        passages: List[Dict[str, Any]],
+        model: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Evaluate a generated answer.
@@ -130,7 +131,10 @@ class RAGService:
         return evaluation.evaluate_response(
             question=question,
             answer=answer,
-            passages=passages
+            passages=passages,
+            # fall back to evaluation.EVAL_MODEL (which honours GROQ_EVAL_MODEL
+            # / GROQ_MODEL) when the caller does not pin a model
+            model=model or evaluation.EVAL_MODEL
         )
     
     def get_sources(self) -> List[Dict[str, Any]]:
