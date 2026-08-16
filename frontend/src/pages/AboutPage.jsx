@@ -1,76 +1,115 @@
 export default function AboutPage() {
   return (
     <div className="about-page">
-      <h1>About My Climate CoPilot</h1>
-      
-      <p>
-        My Climate CoPilot is an AI-powered Question Answering system designed to help 
-        agronomists, climate scientists, and farmer advisors understand climate change 
-        impacts on agriculture and explore adaptation strategies.
-      </p>
+      <div className="about-hero">
+        <h1>About</h1>
+        <p>
+          My Climate CoPilot answers questions about climate change impacts on
+          agriculture using Retrieval-Augmented Generation over authoritative
+          IPCC and FAO literature — with every claim traceable to a document and
+          page number.
+        </p>
+      </div>
 
-      <h2>How It Works</h2>
-      <p>
-        The system uses <strong>Retrieval-Augmented Generation (RAG)</strong> to provide 
-        accurate, citation-backed answers from authoritative climate science literature.
-      </p>
-      
-      <ul>
-        <li><strong>Retrieval:</strong> Finds relevant passages using hybrid search 
-        (semantic embeddings + keyword matching)</li>
-        <li><strong>Generation:</strong> Synthesizes a coherent answer using the 
-        retrieved context with Groq's fast LLM inference</li>
-        <li><strong>Evaluation:</strong> Self-assesses response quality across 7 
-        expert-defined dimensions</li>
-      </ul>
+      <div className="about-section">
+        <h2>Knowledge Base</h2>
+        <div className="about-stats">
+          <div className="about-stat">
+            <div className="about-stat-value">8,191</div>
+            <div className="about-stat-label">Passages indexed</div>
+          </div>
+          <div className="about-stat">
+            <div className="about-stat-value">12</div>
+            <div className="about-stat-label">Documents</div>
+          </div>
+          <div className="about-stat">
+            <div className="about-stat-value">384</div>
+            <div className="about-stat-label">Vector dims</div>
+          </div>
+          <div className="about-stat">
+            <div className="about-stat-value">21</div>
+            <div className="about-stat-label">Eval criteria</div>
+          </div>
+        </div>
+      </div>
 
-      <h2>Knowledge Base</h2>
-      <p>
-        Our knowledge base includes documents from authoritative sources:
-      </p>
-      <ul>
-        <li>IPCC Assessment Reports (AR5, AR6)</li>
-        <li>FAO Climate Change Guidelines</li>
-        <li>WMO Climate Science Reports</li>
-        <li>Regional Climate Adaptation Studies</li>
-      </ul>
+      <div className="about-section">
+        <h2>How It Works</h2>
+        <ul>
+          <li>
+            <strong>Retrieval —</strong> finds relevant passages using hybrid
+            search: FAISS semantic embeddings fused with BM25 keyword matching
+            via Reciprocal Rank Fusion.
+          </li>
+          <li>
+            <strong>Generation —</strong> synthesizes an answer strictly from the
+            retrieved context, with inline citations, via Groq's LLM inference.
+          </li>
+          <li>
+            <strong>Evaluation —</strong> scores the response across 7
+            expert-defined dimensions in a separate, independent LLM pass.
+          </li>
+        </ul>
+      </div>
 
-      <h2>Evaluation Framework</h2>
-      <p>
-        Responses are evaluated across 7 dimensions with 21 sub-criteria:
-      </p>
-      <ul>
-        <li><strong>Context:</strong> Provides background and summary</li>
-        <li><strong>Structure:</strong> Well-organized with headings and bullets</li>
-        <li><strong>Language:</strong> Clear, grammatically correct, domain-appropriate</li>
-        <li><strong>Citations:</strong> Properly referenced sources</li>
-        <li><strong>Specificity:</strong> Location and commodity-specific information</li>
-        <li><strong>Comprehensiveness:</strong> Complete, in-depth coverage</li>
-        <li><strong>Scientific Accuracy:</strong> Factually correct, evidence-based</li>
-      </ul>
+      <div className="about-section">
+        <h2>Sources</h2>
+        <ul>
+          <li>IPCC Assessment Reports (AR5, AR6 — WGI, WGII, WGIII, Synthesis)</li>
+          <li>FAO Climate-Smart Agriculture guidelines and sourcebooks</li>
+          <li>FAO climate adaptation and food security reports</li>
+        </ul>
+      </div>
 
-      <h2>Technology Stack</h2>
-      <ul>
-        <li><strong>Frontend:</strong> React + Vite</li>
-        <li><strong>Backend:</strong> FastAPI + Python</li>
-        <li><strong>Embeddings:</strong> sentence-transformers (all-MiniLM-L6-v2)</li>
-        <li><strong>Vector Search:</strong> FAISS + BM25 with Reciprocal Rank Fusion</li>
-        <li><strong>LLM:</strong> Groq API (llama-3.3-70b-versatile)</li>
-      </ul>
+      <div className="about-section">
+        <h2>Evaluation Framework</h2>
+        <p>
+          Responses are scored across 7 dimensions with 3 binary sub-criteria
+          each, giving 21 points total.
+        </p>
+        <ul>
+          <li><strong>Context —</strong> background framing and closing summary</li>
+          <li><strong>Structure —</strong> logical headings and readable organisation</li>
+          <li><strong>Language —</strong> fluent, correct, domain-appropriate</li>
+          <li><strong>Citations —</strong> appropriate, well-quantified, easy to follow</li>
+          <li><strong>Specificity —</strong> commodity and location detail, or admitting its absence</li>
+          <li><strong>Comprehensiveness —</strong> complete coverage with depth</li>
+          <li><strong>Scientific Accuracy —</strong> robust and consistent with the sources</li>
+        </ul>
+        <p>
+          <strong>Note on interpretation:</strong> this rubric measures
+          presentational quality and consistency with the retrieved sources. It
+          is not an independent fact-check against ground truth, and because the
+          evaluator shares a model family with the generator, scores skew high.
+        </p>
+      </div>
 
-      <h2>Research Background</h2>
-      <p>
-        This project is based on the ACL 2025 paper: 
-        <em>"My Climate CoPilot: A Question Answering System for Climate Adaptation in Agriculture"</em>
-      </p>
+      <div className="about-section">
+        <h2>Stack</h2>
+        <ul>
+          <li><strong>Frontend —</strong> React 18 + Vite</li>
+          <li><strong>Backend —</strong> FastAPI + Pydantic + Uvicorn</li>
+          <li><strong>Embeddings —</strong> sentence-transformers (all-MiniLM-L6-v2)</li>
+          <li><strong>Search —</strong> FAISS IndexFlatIP + BM25Okapi, fused with RRF</li>
+          <li><strong>LLM —</strong> Groq API (llama-3.3-70b-versatile)</li>
+        </ul>
+      </div>
 
-      <h2>Open Source</h2>
-      <p>
-        This project is open source. View the code, contribute, or report issues on{' '}
-        <a href="https://github.com/anusanth26/MyClimateCopilot" target="_blank" rel="noopener noreferrer">
-          GitHub
-        </a>.
-      </p>
+      <div className="about-section">
+        <h2>Research Background</h2>
+        <p>
+          Based on the ACL 2025 paper <em>"My Climate CoPilot: A Question
+          Answering System for Climate Adaptation in Agriculture"</em>. Source
+          code on{' '}
+          <a
+            href="https://github.com/Ksh-tij/MyClimateCopilot"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>.
+        </p>
+      </div>
     </div>
   );
 }

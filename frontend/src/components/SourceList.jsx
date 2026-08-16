@@ -5,23 +5,25 @@ function SourceCard({ source, index }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div 
+    <div
       className={`source-card ${expanded ? 'expanded' : ''}`}
       onClick={() => setExpanded(!expanded)}
     >
       <div className="source-card-header">
         <span className="source-card-number">{index + 1}</span>
         <span className="source-card-title">{source.title}</span>
-        {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        {expanded ? <ChevronUp size={15} strokeWidth={2.5} /> : <ChevronDown size={15} strokeWidth={2.5} />}
       </div>
       <div className="source-card-meta">
-        {source.source} • Page {source.page_number}
+        {source.source} · Page {source.page_number}
       </div>
       <div className="source-card-text">
         {source.text}
       </div>
       <div className="source-card-score">
-        Relevance: {(source.score * 100).toFixed(1)}%
+        {source.similarity != null
+          ? `Relevance ${(source.similarity * 100).toFixed(1)}%`
+          : `BM25 ${source.score.toFixed(2)}`}
       </div>
     </div>
   );
@@ -30,22 +32,22 @@ function SourceCard({ source, index }) {
 export default function SourceList({ sources }) {
   if (!sources || sources.length === 0) {
     return (
-      <div className="sidebar-section">
+      <div className="sidebar-section sidebar-section--sources">
         <h3>
-          <FileText size={18} />
+          <FileText size={16} />
           Sources
         </h3>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-          Retrieved passages will appear here after you ask a question.
+        <p className="sidebar-hint">
+          Retrieved passages appear here once you ask a question.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="sidebar-section">
+    <div className="sidebar-section sidebar-section--sources">
       <h3>
-        <FileText size={18} />
+        <FileText size={16} />
         Sources ({sources.length})
       </h3>
       <div className="sources-list">

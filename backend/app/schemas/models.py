@@ -38,6 +38,7 @@ class PassageResponse(BaseModel):
     page_number: int
     text: str
     score: float
+    similarity: Optional[float] = None
     doc_filename: str
     mode: str
     matched_by: Optional[List[str]] = None

@@ -13,12 +13,15 @@ export default function ChatHistory({ messages, loading }) {
     return (
       <div className="chat-messages">
         <div className="chat-empty">
-          <MessageCircle className="chat-empty-icon" size={64} />
-          <h2>Welcome to My Climate CoPilot</h2>
+          <span className="chat-empty-icon">
+            <MessageCircle size={40} strokeWidth={2.5} />
+          </span>
+          <span className="chat-empty-tag">RAG · IPCC + FAO</span>
+          <h2>Ask the corpus</h2>
           <p>
-            Ask questions about climate change impacts on agriculture, 
-            adaptation strategies, and scientific findings from IPCC, FAO, 
-            and other authoritative sources.
+            Questions about climate impacts on agriculture and adaptation
+            strategies, answered from indexed IPCC and FAO literature — every
+            claim cited back to a document and page.
           </p>
         </div>
       </div>
@@ -30,14 +33,14 @@ export default function ChatHistory({ messages, loading }) {
       {messages.map((msg, idx) => (
         <ChatMessage key={idx} message={msg} />
       ))}
-      
+
       {loading && (
         <div className="loading-message">
           <div className="loading-spinner"></div>
-          <span>Thinking...</span>
+          <span>Retrieving &amp; generating…</span>
         </div>
       )}
-      
+
       <div ref={bottomRef} />
     </div>
   );

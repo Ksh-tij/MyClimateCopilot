@@ -100,7 +100,8 @@ def _build_result(
     metadata: List[Dict[str, Any]],
     score: float,
     mode: str,
-    matched_by: Optional[List[str]] = None
+    matched_by: Optional[List[str]] = None,
+    similarity: Optional[float] = None
 ) -> Dict[str, Any]:
     meta = metadata[idx]
     result = {
@@ -116,6 +117,8 @@ def _build_result(
     }
     if matched_by is not None:
         result["matched_by"] = matched_by
+    if similarity is not None:
+        result["similarity"] = similarity
     return result
 
 
@@ -166,7 +169,9 @@ def search(
             if source_filter and meta.get("source", "").lower() != source_filter.lower():
                 continue
 
-            results.append(_build_result(int(idx), metadata, float(score), mode="dense"))
+            results.append(_build_result(
+                int(idx), metadata, float(score), mode="dense", similarity=float(score)
+            ))
 
             if len(results) >= top_k:
                 break
@@ -224,7 +229,14 @@ def search(
                 continue
 
             matched_by = [name for name, s in (("dense", dense_set), ("bm25", bm25_set)) if idx in s]
-            results.append(_build_result(idx, metadata, fused[idx], mode="hybrid", matched_by=matched_by))
+            # RRF fuses ranks, not similarities, so it isn't a meaningful percentage;
+            # recover the true cosine similarity for display by reconstructing the
+            # stored (normalized) vector and taking the dot product with the query.
+            chunk_vec = index.reconstruct(idx)
+            similarity = float(np.dot(query_vec[0], chunk_vec))
+            results.append(_build_result(
+                idx, metadata, fused[idx], mode="hybrid", matched_by=matched_by, similarity=similarity
+            ))
 
             if len(results) >= top_k:
                 break

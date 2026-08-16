@@ -26,6 +26,7 @@ def _format_passages(passages: List[dict]) -> List[PassageResponse]:
             page_number=p["page_number"],
             text=p["text"],
             score=p["score"],
+            similarity=p.get("similarity"),
             doc_filename=p["doc_filename"],
             mode=p["mode"],
             matched_by=p.get("matched_by")

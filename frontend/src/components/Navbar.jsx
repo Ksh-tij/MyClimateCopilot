@@ -1,37 +1,39 @@
-import { Leaf, Github, Info } from 'lucide-react';
+import { Leaf, Github, Info, MessageSquare } from 'lucide-react';
 
 export default function Navbar({ currentPage, onNavigate }) {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Leaf size={28} />
+        <span className="navbar-brand-mark">
+          <Leaf size={22} strokeWidth={2.5} />
+        </span>
         <span>My Climate CoPilot</span>
       </div>
+
       <div className="navbar-links">
-        <a 
-          href="#" 
-          className="navbar-link"
+        <a
+          href="#"
+          className={`navbar-link ${currentPage === 'chat' ? 'is-active' : ''}`}
           onClick={(e) => { e.preventDefault(); onNavigate('chat'); }}
-          style={{ color: currentPage === 'chat' ? 'var(--color-primary)' : undefined }}
         >
+          <MessageSquare size={14} strokeWidth={2.5} />
           Chat
         </a>
-        <a 
-          href="#" 
-          className="navbar-link"
+        <a
+          href="#"
+          className={`navbar-link ${currentPage === 'about' ? 'is-active' : ''}`}
           onClick={(e) => { e.preventDefault(); onNavigate('about'); }}
-          style={{ color: currentPage === 'about' ? 'var(--color-primary)' : undefined }}
         >
-          <Info size={16} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+          <Info size={14} strokeWidth={2.5} />
           About
         </a>
-        <a 
-          href="https://github.com/anusanth26/MyClimateCopilot"
+        <a
+          href="https://github.com/Ksh-tij/MyClimateCopilot"
           className="navbar-link"
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Github size={16} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+          <Github size={14} strokeWidth={2.5} />
           GitHub
         </a>
       </div>
