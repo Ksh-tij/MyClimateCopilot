@@ -3,7 +3,7 @@
 """
 
 from fastapi import APIRouter, HTTPException
-from typing import List
+from typing import List, Optional
 
 from ..schemas.models import (
     AskRequest, AskResponse, PassageResponse, 
@@ -35,32 +35,55 @@ def _format_passages(passages: List[dict]) -> List[PassageResponse]:
     ]
 
 
-def _format_evaluation(eval_result: dict) -> EvaluationResponse:
-    """Convert raw evaluation to response model."""
+def _format_evaluation(eval_result: dict) -> Optional[EvaluationResponse]:
+    """
+    Convert raw evaluation to the response model.
+
+    evaluate_response() keys its dimensions by display name ("Context") and uses
+    the inner keys "subscores"/"max", while the API contract is keyed by criterion
+    id ("1_context") with "subcriteria"/"max_score" and per-criterion descriptions.
+    Rebuild from EVALUATION_CRITERIA so the canonical ids, order and descriptions
+    are authoritative rather than inferred from the LLM response.
+    """
+    # evaluate_response() returns a flat {scores, feedback, error} dict when the
+    # LLM output could not be parsed — there is nothing to score in that case.
+    if eval_result.get("error") or "dimensions" not in eval_result:
+        return None
+
+    raw_dims = eval_result["dimensions"]
     dimensions = {}
-    
-    for dim_key, dim_data in eval_result["dimensions"].items():
+
+    for dim_key, dim_meta in EVALUATION_CRITERIA.items():
+        name = dim_meta["name"]
+        raw = raw_dims.get(name) or raw_dims.get(dim_key) or {}
+        # tolerate either key spelling so a later normalisation of evaluation.py
+        # does not silently break this endpoint
+        sub_raw = raw.get("subscores") or raw.get("subcriteria") or {}
+
         subcriteria = []
-        for sub_code, sub_info in dim_data["subcriteria"].items():
+        for sub_code, description in dim_meta["subcriteria"].items():
+            value = sub_raw.get(sub_code, 0)
+            # values are plain 0/1 ints here, but accept the {score: n} shape too
+            score = value.get("score", 0) if isinstance(value, dict) else value
             subcriteria.append(SubCriterionScore(
                 code=sub_code,
-                description=sub_info["description"],
-                score=sub_info["score"]
+                description=description,
+                score=int(score)
             ))
-        
+
         dimensions[dim_key] = DimensionScore(
-            name=dim_data["name"],
-            score=dim_data["score"],
-            max_score=dim_data["max_score"],
+            name=name,
+            score=int(raw.get("score", sum(s.score for s in subcriteria))),
+            max_score=int(raw.get("max_score") or raw.get("max") or 3),
             subcriteria=subcriteria
         )
-    
+
     return EvaluationResponse(
         total_score=eval_result["total_score"],
         max_score=eval_result["max_score"],
         percentage=eval_result["percentage"],
         dimensions=dimensions,
-        feedback=eval_result["feedback"]
+        feedback=eval_result.get("feedback", "")
     )
 
 
