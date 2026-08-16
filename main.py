@@ -1,14 +1,17 @@
 """
 main.py
-Entry point for the Climate CoPilot pipeline — currently covers
-Weeks 1-3 (Data Collection -> Preprocessing). Chunking, embeddings,
-FAISS, and the RAG pipeline plug in as later stages using the same
-pattern.
+Entry point for the Climate CoPilot pipeline — covers data collection,
+preprocessing, chunking, indexing, retrieval, RAG answer generation, and self-evaluation.
 
 Usage:
     python main.py collect --folder ~/Downloads/fao_pdfs --source FAO --topic "crop adaptation"
     python main.py preprocess
     python main.py summary
+    python main.py chunk
+    python main.py index
+    python main.py search -q "climate change impacts on agriculture"
+    python main.py ask -q "How will climate change affect wheat yields?"
+    python main.py ask -q "How will climate change affect wheat yields?" --eval
 """
 
 import argparse
@@ -18,6 +21,8 @@ import preprocessing
 import chunking
 import indexing
 import retrieval
+import generation
+import evaluation
 
 
 def main():
@@ -53,6 +58,23 @@ def main():
              "or hybrid (both, merged via Reciprocal Rank Fusion)"
     )
 
+    # Phase 3: Ask / RAG Answer Generation
+    ask_parser = subparsers.add_parser("ask", help="Ask a climate question and get a grounded answer")
+    ask_parser.add_argument("--query", "-q", required=True, help="Your climate adaptation question")
+    ask_parser.add_argument("--top_k", "-k", type=int, default=5, help="Number of passages to retrieve (default: 5)")
+    ask_parser.add_argument("--source", help="Optional source filter (e.g. FAO, IPCC)")
+    ask_parser.add_argument(
+        "--mode", "-m", choices=["dense", "bm25", "hybrid"], default="hybrid",
+        help="Retrieval mode (default: hybrid)"
+    )
+    ask_parser.add_argument(
+        "--model", default="llama-3.3-70b-versatile",
+        help="Groq model to use (default: llama-3.3-70b-versatile)"
+    )
+    ask_parser.add_argument("--show-passages", action="store_true", help="Show retrieved passages in output")
+    ask_parser.add_argument("--verbose", "-v", action="store_true", help="Show intermediate steps")
+    ask_parser.add_argument("--eval", "-e", action="store_true", help="Run self-evaluation on the generated answer")
+
     args = parser.parse_args()
 
     if args.command == "collect":
@@ -68,6 +90,27 @@ def main():
     elif args.command == "search":
         results = retrieval.search(args.query, top_k=args.top_k, source_filter=args.source, mode=args.mode)
         retrieval.print_search_results(args.query, results, mode=args.mode)
+    elif args.command == "ask":
+        # Generate answer
+        result = generation.generate_answer(
+            question=args.query,
+            top_k=args.top_k,
+            source_filter=args.source,
+            retrieval_mode=args.mode,
+            model=args.model,
+            verbose=args.verbose
+        )
+        generation.print_answer(result, show_passages=args.show_passages)
+        
+        # Run self-evaluation if requested
+        if args.eval:
+            eval_result = evaluation.evaluate_response(
+                question=result["question"],
+                answer=result["answer"],
+                passages=result["passages"],
+                verbose=args.verbose
+            )
+            evaluation.print_evaluation(eval_result)
 
 
 if __name__ == "__main__":
