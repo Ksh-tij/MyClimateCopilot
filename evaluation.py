@@ -18,11 +18,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Evaluation model (can be different from the generation model).
-# GROQ_EVAL_MODEL overrides it specifically; otherwise it follows GROQ_MODEL.
-# Running evaluation on a different model from generation also spreads the load
-# across separate per-model rate-limit pools.
-EVAL_MODEL = os.getenv("GROQ_EVAL_MODEL") or os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile"
+# Evaluation model (can be different from generation model)
+EVAL_MODEL = "llama-3.3-70b-versatile"
 
 # The 7 evaluation dimensions with sub-criteria (from the paper)
 EVALUATION_CRITERIA = {

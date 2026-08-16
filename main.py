@@ -68,8 +68,8 @@ def main():
         help="Retrieval mode (default: hybrid)"
     )
     ask_parser.add_argument(
-        "--model", default=None,
-        help="Groq model to use (default: GROQ_MODEL from .env, else llama-3.3-70b-versatile)"
+        "--model", default="llama-3.3-70b-versatile",
+        help="Groq model to use (default: llama-3.3-70b-versatile)"
     )
     ask_parser.add_argument("--show-passages", action="store_true", help="Show retrieved passages in output")
     ask_parser.add_argument("--verbose", "-v", action="store_true", help="Show intermediate steps")

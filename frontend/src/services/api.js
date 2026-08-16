@@ -14,7 +14,7 @@ export async function askQuestion({
   sourceFilter = null,
   includeSources = true,
   includeEvaluation = false,
-  model = null   // null => server decides, via GROQ_MODEL in .env
+  model = 'llama-3.3-70b-versatile'
 }) {
   const response = await fetch(`${API_BASE}/ask`, {
     method: 'POST',
