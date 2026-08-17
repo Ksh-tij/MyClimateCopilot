@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT_DIR))
 import retrieval
 import generation
 import evaluation
+from config import FAISS_INDEX_PATH, CHUNKS_METADATA_PATH, BM25_INDEX_PATH
 
 
 class RAGService:
@@ -33,18 +34,33 @@ class RAGService:
         self._initialized = True
         self._index_loaded = False
         self._chunk_count = 0
+        self._index_signature = None
+
+    @staticmethod
+    def _current_index_signature():
+        """Identify the exact on-disk index version without reading its contents."""
+        paths = (FAISS_INDEX_PATH, CHUNKS_METADATA_PATH, BM25_INDEX_PATH)
+        if not all(path.exists() for path in paths):
+            return None
+        return tuple((path.stat().st_mtime_ns, path.stat().st_size) for path in paths)
     
     def ensure_index_loaded(self) -> bool:
         """Ensure the index is loaded and return status."""
-        if self._index_loaded:
+        signature = self._current_index_signature()
+        if self._index_loaded and signature == self._index_signature:
             return True
         try:
+            # A completed rebuild replaces these files atomically. Reload them
+            # on the next request so every answer uses the latest corpus.
+            retrieval.clear_caches()
             # Trigger index loading by getting index and metadata
             index, metadata = retrieval._get_index_and_metadata()
             self._chunk_count = len(metadata)
             self._index_loaded = True
+            self._index_signature = self._current_index_signature()
             return True
         except FileNotFoundError:
+            self._index_loaded = False
             return False
     
     def get_chunk_count(self) -> int:

@@ -59,6 +59,55 @@ def _append_metadata_rows(rows: list[dict]) -> None:
         writer.writerows(rows)
 
 
+def _guess_document_metadata(filename: str) -> tuple[str, str]:
+    """Supply safe default metadata for PDFs placed directly in data/raw/."""
+    name = filename.lower()
+    if any(marker in name for marker in ("ipcc", "ar5", "ar6", "spm")):
+        return "IPCC", "climate science and agricultural impacts"
+    if any(marker in name for marker in ("icar", "nicra", "pcrt", "india", "kerala", "assam", "tamil", "odisha", "madhya", "uttar")):
+        return "India / ICAR", "climate-resilient agriculture"
+    if any(marker in name for marker in ("fao", "i332", "i249", "i018", "i518", "i603", "i639", "i865", "ca", "cb", "cc")):
+        return "FAO", "climate adaptation and food security"
+    if "world" in name or "136015" in name:
+        return "World Bank", "climate-smart agriculture"
+    return "Unclassified", "climate adaptation and agriculture"
+
+
+def register_untracked_raw_pdfs() -> int:
+    """Register every unique PDF already present in ``data/raw``.
+
+    This makes drag-and-drop document additions part of the NLP corpus without
+    requiring a separate collection command. Existing metadata and exact
+    duplicate PDFs are left untouched.
+    """
+    existing_hashes = _load_existing_hashes()
+    new_rows = []
+
+    for pdf_path in sorted(RAW_DIR.glob("*.pdf")):
+        file_hash = _sha256_of_file(pdf_path)
+        if file_hash in existing_hashes:
+            continue
+
+        source, topic = _guess_document_metadata(pdf_path.name)
+        new_rows.append({
+            "filename": pdf_path.name,
+            "title": pdf_path.stem.replace("%20", " ").replace("_", " "),
+            "source": source,
+            "topic": topic,
+            "original_path_or_url": str(pdf_path),
+            "sha256": file_hash,
+            "size_kb": round(pdf_path.stat().st_size / 1024, 1),
+        })
+        existing_hashes.add(file_hash)
+
+    if new_rows:
+        _append_metadata_rows(new_rows)
+        print(f"Registered {len(new_rows)} untracked PDF(s) already in {RAW_DIR}.")
+    else:
+        print("All PDFs in data/raw are already registered.")
+    return len(new_rows)
+
+
 def register_local_pdfs(source_folder: str, source: str, topic: str, title_prefix: str = "") -> int:
     """
     Copy every PDF found in `source_folder` into data/raw/, and log it in metadata.csv.
@@ -128,7 +177,6 @@ def download_from_urls(urls: Iterable[str], source: str, topic: str, timeout: in
         number of documents successfully downloaded and registered
     """
     existing_hashes = _load_existing_hashes()
-    new_rows = []
     downloaded = 0
 
     for url in urls:
@@ -141,6 +189,9 @@ def download_from_urls(urls: Iterable[str], source: str, topic: str, timeout: in
             continue
 
         content = resp.content
+        if not content.startswith(b"%PDF-"):
+            print(f"  [skip] response was not a PDF: {url}")
+            continue
         file_hash = hashlib.sha256(content).hexdigest()
         if file_hash in existing_hashes:
             print(f"  [skip] already registered (duplicate content): {url}")
@@ -158,7 +209,7 @@ def download_from_urls(urls: Iterable[str], source: str, topic: str, timeout: in
         with open(dest_path, "wb") as f:
             f.write(content)
 
-        new_rows.append({
+        row = {
             "filename": dest_path.name,
             "title": Path(filename).stem,
             "source": source,
@@ -166,13 +217,13 @@ def download_from_urls(urls: Iterable[str], source: str, topic: str, timeout: in
             "original_path_or_url": url,
             "sha256": file_hash,
             "size_kb": round(len(content) / 1024, 1),
-        })
+        }
+        # Checkpoint after each file: long collections can be interrupted by a
+        # slow host, but successful downloads must remain part of the corpus.
+        _append_metadata_rows([row])
         existing_hashes.add(file_hash)
         downloaded += 1
         print(f"  [ok]   downloaded: {dest_path.name}")
-
-    if new_rows:
-        _append_metadata_rows(new_rows)
 
     print(f"download_from_urls: {downloaded} new document(s) downloaded")
     return downloaded

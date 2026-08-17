@@ -11,12 +11,18 @@ The LLM evaluates the generated response in a separate conversation for objectiv
 
 import os
 import json
+from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 from groq import Groq
 from dotenv import load_dotenv
 
-load_dotenv()
+# Accept standard UTF-8 .env files and UTF-16 files saved by Windows Notepad.
+_ENV_PATH = Path(__file__).resolve().parent / ".env"
+try:
+    load_dotenv(_ENV_PATH, encoding="utf-8")
+except UnicodeDecodeError:
+    load_dotenv(_ENV_PATH, encoding="utf-16")
 
 # Evaluation model (can be different from generation model)
 EVAL_MODEL = "llama-3.3-70b-versatile"

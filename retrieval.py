@@ -29,6 +29,14 @@ _METADATA_CACHE: Optional[List[Dict[str, Any]]] = None
 _BM25_CACHE: Optional[BM25Okapi] = None
 
 
+def clear_caches() -> None:
+    """Discard loaded search artifacts so a newly built index can be used."""
+    global _INDEX_CACHE, _METADATA_CACHE, _BM25_CACHE
+    _INDEX_CACHE = None
+    _METADATA_CACHE = None
+    _BM25_CACHE = None
+
+
 def _get_model() -> SentenceTransformer:
     global _MODEL_CACHE
     if _MODEL_CACHE is None:

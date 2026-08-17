@@ -42,10 +42,16 @@ env/
 .DS_Store
 Thumbs.db
 
-# Project specific - large data files (optional, uncomment if needed)
-# data/raw/*.pdf
-# data/vectorstore/index.faiss
-# data/vectorstore/bm25_index.pkl
+# Project specific - large data files & generated artifacts
+data/raw/*.pdf
+!data/raw/.gitkeep
+data/processed/*.json
+!data/processed/.gitkeep
+data/chunks/*.json
+!data/chunks/.gitkeep
+data/vectorstore/index.faiss
+data/vectorstore/bm25_index.pkl
+data/vectorstore/chunks_metadata.json
 
 # Node.js / Frontend
 node_modules/

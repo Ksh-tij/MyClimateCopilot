@@ -7,12 +7,13 @@ overlapping passages of configurable character length, and exports all chunks
 with metadata to data/chunks/chunks.json.
 """
 
+import csv
 import json
 from pathlib import Path
 from typing import List, Dict, Any
 
 from config import (
-    PROCESSED_DIR, CHUNKS_JSON, CHUNK_SIZE, CHUNK_OVERLAP
+    PROCESSED_DIR, CHUNKS_JSON, METADATA_CSV, CHUNK_SIZE, CHUNK_OVERLAP
 )
 
 
@@ -60,15 +61,24 @@ def create_chunks() -> List[Dict[str, Any]]:
     Process all JSON files in PROCESSED_DIR and generate passage chunks.
     Saves and returns the complete list of chunk dictionaries.
     """
-    processed_files = sorted(PROCESSED_DIR.glob("*.json"))
+    # Read metadata.csv to only chunk curated documents
+    if METADATA_CSV.exists():
+        with open(METADATA_CSV, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            # Get valid stems from metadata.csv (first 18 entries or all metadata entries)
+            allowed_stems = {Path(row["filename"]).stem for row in reader if row.get("filename")}
+        processed_files = [f for f in sorted(PROCESSED_DIR.glob("*.json")) if f.stem in allowed_stems]
+    else:
+        processed_files = sorted(PROCESSED_DIR.glob("*.json"))
+
     if not processed_files:
-        print(f"No processed JSON files found in {PROCESSED_DIR}. Run preprocessing first.")
+        print(f"No matching processed JSON files found in {PROCESSED_DIR}. Run preprocessing first.")
         return []
 
     all_chunks = []
     chunk_counter = 0
 
-    print(f"Chunking {len(processed_files)} document(s) (chunk_size={CHUNK_SIZE}, overlap={CHUNK_OVERLAP})...")
+    print(f"Chunking {len(processed_files)} curated document(s) (chunk_size={CHUNK_SIZE}, overlap={CHUNK_OVERLAP})...")
 
     for file_path in processed_files:
         with open(file_path, "r", encoding="utf-8") as f:

@@ -7,6 +7,7 @@ and generates a grounded answer with citations using Groq's LLM API.
 """
 
 import os
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 from groq import Groq
@@ -14,8 +15,13 @@ from dotenv import load_dotenv
 
 import retrieval
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from the project .env file.  Windows Notepad can
+# save this file as UTF-16, while python-dotenv expects UTF-8 by default.
+_ENV_PATH = Path(__file__).resolve().parent / ".env"
+try:
+    load_dotenv(_ENV_PATH, encoding="utf-8")
+except UnicodeDecodeError:
+    load_dotenv(_ENV_PATH, encoding="utf-16")
 
 # Groq client (initialized lazily)
 _GROQ_CLIENT: Optional[Groq] = None

@@ -24,6 +24,8 @@ from pathlib import Path
 
 import fitz  # PyMuPDF
 
+import data_collection
+
 from config import (
     RAW_DIR, PROCESSED_DIR, METADATA_CSV, PREPROCESS_LOG,
     MIN_TEXT_LENGTH, REPEATED_LINE_MAX_LEN, REPEATED_LINE_MIN_PAGE_FRACTION,
@@ -149,6 +151,9 @@ def preprocess_document(row: dict) -> dict:
 
 
 def run_preprocessing() -> None:
+    # Make every unique PDF in data/raw part of the corpus, including PDFs
+    # copied into the folder manually rather than through the collection CLI.
+    data_collection.register_untracked_raw_pdfs()
     rows = _load_metadata()
     if not rows:
         print("metadata.csv is empty — nothing to preprocess.")

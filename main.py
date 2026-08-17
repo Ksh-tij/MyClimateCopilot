@@ -36,7 +36,7 @@ def main():
     collect_parser.add_argument("--topic", required=True, help="e.g. 'crop adaptation', 'water management'")
 
     # Preprocessing
-    subparsers.add_parser("preprocess", help="Extract & clean text from every collected PDF")
+    subparsers.add_parser("preprocess", help="Register and extract text from every PDF in data/raw")
     
     # Summary
     subparsers.add_parser("summary", help="Show how many documents have been collected")
